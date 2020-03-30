@@ -10,15 +10,13 @@
 
 #define PZ_THEME_CHANGE_NOTIFICATION    @"PZ_THEME_CHANGE_NOTIFICATION"
 
-#define kThemePicker(light,dark)                ([PZTheme sharedInstance].theme==PZThemeStyle_Dark?dark:light)
-#define kThemeObjectPicker(lightObj,darkObj)    ([PZTheme objectForLight:(lightObj) dark:(darkObj)])
-#define kThemeColorPicker(lightColor,darkColor) ([PZTheme colorForLight:(lightColor) dark:(darkColor)])
-#define kThemeImagePicker(imgName)              ([PZTheme imageNamed:imgName])
+#define ACTUAL_THEME(themeStyle)                (themeStyle==PZThemeStyle_Auto?[PZTheme sharedInstance].theme:themeStyle)
 
-NS_ASSUME_NONNULL_BEGIN
+#define THEME_PICKER(light,dark,theme)          (ACTUAL_THEME(theme)==PZThemeStyle_Dark?dark:light)
 
 typedef NS_ENUM(NSInteger, PZThemeStyle)
 {
+    PZThemeStyle_Auto = 0, //自动模式，仅用于设置单个VC，不用于设置全局
     PZThemeStyle_Light,
     PZThemeStyle_Dark,
 };
@@ -29,12 +27,4 @@ typedef NS_ENUM(NSInteger, PZThemeStyle)
 
 + (PZTheme *)sharedInstance;
 
-+ (id)objectForLight:(id)light dark:(id)dark;
-
-+ (UIColor *)colorForLight:(UIColor *)light dark:(UIColor *)dark;
-
-+ (UIImage *)imageNamed:(NSString *)name;
-
 @end
-
-NS_ASSUME_NONNULL_END

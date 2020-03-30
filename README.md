@@ -7,11 +7,27 @@
 ## 使用介绍
 ### 引入方式
 ```
-pod 'PZTheme', '~> 0.1'
+pod 'PZTheme', '~> 0.2.0'
 ```
 
+### PZTheme
+PZTheme是一个单例模式，有一个自身的theme属性来控制黑白样式，该属性改变时会发对对应的NSNotification去触发handleTheme。PZTheme 可以通过THEME_PICKER(light,dark,theme)来配置样式选择和当前样式。
+
+PZTheme定义了三种主题模式：
+
+```
+PZThemeStyle_Auto	自动模式，只能用于设置单个控件的主题，不可用于全局主题的设置。
+PZThemeStyle_Light	明亮模式
+PZThemeStyle_Dark   暗黑模式
+```
+
+### PZWindow
+PZWindow 主要通过traitCollectionDidChange回调方法去修改PZTheme的全局设置，从而实现iOS13以上的动态切换功能。
+
 ### PZObject
-通过Runtime方式给NSObject添加了一个名为pz的PZObject对象（pz可以视为NSObject的一个助理，其生命周期与NSObject保持一致）。PZObject主要支持下面两个方法：
+通过Runtime方式给NSObject添加了一个名为pz的PZObject对象（pz可以视为NSObject的一个助理，其生命周期与NSObject保持一致）。同时PZObject自带了一个PZThemeStyle类型的属性theme，用于定制单个控件的主题。
+
+PZObject主要支持下面两个方法：
 
 ```
 - (T)customize:(void(^)(T x))block;
@@ -22,35 +38,23 @@ pod 'PZTheme', '~> 0.1'
 customize 方法主要完成NSObject初始化之后自身定制化工作，该方法只会执行一次。customize本身没有什么特性逻辑，其实质上一个语法糖，借鉴于L闭包的概念，使代码更加清晰，CV操作更方便。同时返回NSObject自身，使其能达到链式表达的效果。customize方法使用示例如下：
 
 ```
-_btnNext = [[UIButton new].pz customize:^(UIButton *btn) {
-    btn.frame = CGRectMake(100, 200, 127, 53);
-    btn.titleLabel.font = [UIFont systemFontOfSize:20];
-    [btn addTarget:self action:@selector(jumpNext:) forControlEvents:UIControlEventTouchUpInside];
+UIButton *btn = [[UIButton new].pz customize:^(UIButton *button) {
+    button.frame = CGRectMake(0, 0, 127, 53);
+    button.titleLabel.font = [UIFont systemFontOfSize:20];
+    [button setTitle:@"Test" forState:UIControlStateNormal];
+    [button addTarget:self action:@selector(jumpNext:) forControlEvents:UIControlEventTouchUpInside];
 }];
-[self.view addSubview:_btnNext];
+[self addSubview:btn];
 ```
 
 handleTheme方法则实现动态切换的关键，助理pz会为NSObject保存这个block，在执行时先默认调用一次，后面收到特定的NSNotification会再次调用这个block，从而达到动态切换效果。实际上，按照这种模式你还可以定义出handleTheme2，handleTheme3的方法来对应不同NSNotification来实现任何需要动态切换场景，比如切换字体大小等。handleTheme的使用示例如下
 
 ```
-[_btnNext.pz handleTheme:^(UIButton *btn) {
-    [btn setBackgroundImage:kThemeImagePicker(@"bg") forState:UIControlStateNormal];
-    [btn setTitle:kThemeObjectPicker(@"明亮模式",@"暗黑模式") forState:UIControlStateNormal];
-    [btn setTitleColor:kThemeColorPicker([UIColor blackColor],[UIColor whiteColor]) forState:UIControlStateNormal];
+[btn.pz handleTheme:^(UIButton *btn) {
+    [btn setBackgroundImage:THEME_PICKER([UIImage imageNamed:@"bg"],[UIImage imageNamed:@"bg_dark"],theme) forState:UIControlStateNormal];
+    [btn setTitleColor:THEME_PICKER([UIColor blackColor],[UIColor whiteColor],theme) forState:UIControlStateNormal];
 }];
 ```
-### PZTheme
-PZTheme是一个单例模式，有一个自身的theme属性来控制黑白样式（该属性只在iOS13以下系统中才有实际意义），该属性改变时会发对对应的NSNotification去触发handleTheme。PZTheme主要通过以下宏定义来控制对应样式的目标选择。
 
-```
-#define kThemePicker(light,dark)                ([PZTheme sharedInstance].theme==PZThemeStyle_Dark?dark:light)
-#define kThemeObjectPicker(lightObj,darkObj)    ([PZTheme objectForLight:(lightObj) dark:(darkObj)])
-#define kThemeColorPicker(lightColor,darkColor) ([PZTheme colorForLight:(lightColor) dark:(darkColor)])
-#define kThemeImagePicker(imgName)              ([PZTheme imageNamed:imgName])
-```
 
-另外PZTheme在iOS13中，屏蔽了NSNotification的发送，通过苹果提供给colorWithDynamicProvider等方式去适配iOS13的主题。
-（这里也可以考虑完全使用handleTheme，在监听traitCollection变化后去发出NSNotification达到动态切换的目的，可以做到完全不依赖苹果iOS 13的新方法。这种方式在Demo中暂未去实现。）
 
-## 补充说明
-目前方案中，只考虑整个APP所有界面都是同时支持黑白样式的，并没有考虑单独某个界面定制为固定的暗黑或者明亮模式。后续版本将会支持单个VC的定制化功能。

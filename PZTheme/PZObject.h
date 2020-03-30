@@ -7,8 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "PZTheme.h"
 
 @interface PZObject<__contravariant T> : NSObject
+
+@property (nonatomic, assign) PZThemeStyle theme;
 
 @property (nonatomic, weak) T element;
 

@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = 'PZTheme'
-  s.version          = '0.1.0'
-  s.summary          = '用一套代码去实现iOS13明亮/暗黑模式和iOS13以下黑白版样式适配.'
+  s.version          = '0.2.0'
+  s.summary          = '一套代码搞定iOS13暗黑模式和iOS13以下自定义黑白样式适配，并支持控件单独配置（自动/暗黑/明亮）'
   s.homepage         = 'https://github.com/ZPL-HUST/PZTheme'
   s.license          = 'MIT'
   s.author           = { 'paul' => 'zpl_hust@qq.com' }

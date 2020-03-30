@@ -7,7 +7,6 @@
 //
 
 #import "PZObject.h"
-#import "PZTheme.h"
 #import <objc/runtime.h>
 
 @implementation PZObject
